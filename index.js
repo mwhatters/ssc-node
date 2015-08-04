@@ -1,4 +1,4 @@
-var io = require('socket.io').listen(5001)
+var io = require('socket.io').listen(5000)
 var redis = require('redis')
 // var commentClient = redis.createClient();
 // var roomClient    = redis.createClient();

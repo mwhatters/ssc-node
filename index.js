@@ -1,47 +1,43 @@
 var io = require('socket.io').listen(parseInt(process.env.PORT) || 5001);
 var url = require('url');
 var redis = require('redis');
-// var redisURL = url.parse(process.env.REDISCLOUD_URL);
-
-// var commentClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
-// var roomClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
-// commentClient.auth(redisURL.auth.split(":")[1]);
-// roomClient.auth(redisURL.auth.split(":")[1]);
 
 // localhost bullshit
 var commentClient = redis.createClient();
 var roomClient = redis.createClient();
 
+// var redisURL = url.parse(process.env.REDISCLOUD_URL);
+// var commentClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
+// var roomClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
+// commentClient.auth(redisURL.auth.split(":")[1]);
+// roomClient.auth(redisURL.auth.split(":")[1]);
+
 commentClient.subscribe('comment-created')
 roomClient.subscribe('room-created')
 
-// Max listeners?
+// Max listeners
 io.sockets.setMaxListeners(20)
 
 // Connection in general
 io.on('connection', function(socket) {
 	var url = io.sockets.sockets[0].handshake.headers.referer
 
-
 	//Joining a room
 	socket.on('room-joined', function(room) {
 		socket.join(room)
-		console.log('a room has been joined! roomkey: ' + room)
+		// console.log('a room has been joined! roomkey: ' + room)
 
 		var currentRoom = io.sockets.adapter.rooms[room]
-
 		var currentRoomCount = Object.keys(currentRoom).length
-		console.log(Object.keys(currentRoom).length)
 		io.sockets.emit('usercount-'+room, currentRoomCount)
 	})
 
 	//Leaving a room
 	socket.on('room-left', function(room) {
 		socket.leave(room)
-		console.log('a room has been left! roomkey: ' + room)
+		// console.log('a room has been left! roomkey: ' + room)
 
 		var currentRoom = io.sockets.adapter.rooms[room]
-		console.log(Object.keys(currentRoom).length)
 		var currentRoomCount = Object.keys(currentRoom).length
 		io.sockets.emit('usercount-'+room, currentRoomCount)
 	})

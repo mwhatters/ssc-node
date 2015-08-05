@@ -1,16 +1,16 @@
 var io = require('socket.io').listen(parseInt(process.env.PORT) || 5001);
 var url = require('url');
 var redis = require('redis');
-var redisURL = url.parse(process.env.REDISCLOUD_URL);
+// var redisURL = url.parse(process.env.REDISCLOUD_URL);
 
-var commentClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
-var roomClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
-commentClient.auth(redisURL.auth.split(":")[1]);
-roomClient.auth(redisURL.auth.split(":")[1]);
+// var commentClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
+// var roomClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
+// commentClient.auth(redisURL.auth.split(":")[1]);
+// roomClient.auth(redisURL.auth.split(":")[1]);
 
 // localhost bullshit
-// var commentClient = redis.createClient();
-// var roomClient = redis.createClient();
+var commentClient = redis.createClient();
+var roomClient = redis.createClient();
 
 commentClient.subscribe('comment-created')
 roomClient.subscribe('room-created')
@@ -18,18 +18,34 @@ roomClient.subscribe('room-created')
 // Max listeners?
 io.sockets.setMaxListeners(20)
 
-// roomlisteners
-// var roomcounter = {}
-
 // Connection in general
 io.on('connection', function(socket) {
 	var url = io.sockets.sockets[0].handshake.headers.referer
 
 
-	// TODO: Namespace rooms, find connected users
-	var roomcode = url.match(/http:\/\/localhost:3000\/chatrooms\/(.*)/)[1]
-	var num_of_people_in_room = socket.join(roomcode).conn.server.clientsCount
-	console.log('connection made to ' + url + ' : ' + num_of_people_in_room)
+	//Joining a room
+	socket.on('room-joined', function(room) {
+		socket.join(room)
+		console.log('a room has been joined! roomkey: ' + room)
+
+		var currentRoom = io.sockets.adapter.rooms[room]
+
+		var currentRoomCount = Object.keys(currentRoom).length
+		console.log(Object.keys(currentRoom).length)
+		io.sockets.emit('usercount-'+room, currentRoomCount)
+	})
+
+	//Leaving a room
+	socket.on('room-left', function(room) {
+		socket.leave(room)
+		console.log('a room has been left! roomkey: ' + room)
+
+		var currentRoom = io.sockets.adapter.rooms[room]
+		console.log(Object.keys(currentRoom).length)
+		var currentRoomCount = Object.keys(currentRoom).length
+		io.sockets.emit('usercount-'+room, currentRoomCount)
+	})
+
 });	
 
 	commentClient.on('message', function(channel, commentList){
@@ -51,6 +67,13 @@ io.on('connection', function(socket) {
 
 
 
+
+// SOME OLD BULLSHIT CODE
+
+// TODO: Namespace rooms, find connected users
+// var roomcode = url.match(/http:\/\/localhost:3000\/chatrooms\/(.*)/)
+// var roomkey = null
+
 	// var url = io.sockets.sockets[0].handshake.headers.referer
 
 	// if (roomcounter.hasOwnProperty(url)) {
@@ -65,4 +88,11 @@ io.on('connection', function(socket) {
 	// 	console.log('disconnection')
 	// 	console.log(roomcounter)
 	// })
+
+	//ensure that a room is joined, and it not the homepage
+	// if (roomcode != null) {
+	// 	roomkey = roomcode[1]
+	// 	socket.join(roomkey)
+	// 	console.log('room joined! key: ' + roomkey + ' --- number of users: ' + Object.keys(roomkey).length)
+	// }
 

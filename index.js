@@ -6,6 +6,8 @@ var redis = require('redis');
 var commentClient = redis.createClient();
 var roomClient = redis.createClient();
 
+
+// heroku
 // var redisURL = url.parse(process.env.REDISCLOUD_URL);
 // var commentClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
 // var roomClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});

@@ -11,6 +11,7 @@ var roomClient = redis.createClient();
 // var redisURL = url.parse(process.env.REDISCLOUD_URL);
 // var commentClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
 // var roomClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
+
 // commentClient.auth(redisURL.auth.split(":")[1]);
 // roomClient.auth(redisURL.auth.split(":")[1]);
 
